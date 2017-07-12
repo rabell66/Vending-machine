@@ -13,8 +13,7 @@ describe("GET /api/customer/items", function(){
             var success =res.body["vendingData"]["status"]
             assert.equal(success, "success" );            
         })
-        .end(done);///tells supertest we are done\\\
-        // .end(function(err, res){if(err){done(err);else{done()}}})
+        .end(done);
     });
 });
 
@@ -25,18 +24,47 @@ describe("POST /api/customer/items/:itemId/purchases", function(){
         .expect(200)
         .expect("Content-Type", "application/json; charset=utf-8")
         .expect(function(res){
-            var inventory = res.body.newInventory
-          
-            
+            var inventory = res.body["itemInformation"]["quantity"]  
+            console.log("this is inventory", res.body)
             assert.equal(inventory, "9")
-
         }) .end(done);
-        });
-        
+        });        
+    });
+describe("POST /api/customer/items/:itemID/purchases",function(){
+    it("should return with a quantity the difference between the cost and paid amount and inventory should be reduced by one",
+    function(done){
+        request(apiApp)
+        .post("/api/customer/items/4/purchases")
+        .expect(200)
+        .expect("Content-Type", "application/json; charset=utf-8")
+        .expect(function(res){
+            var inventory = res.body["itemInformation"]["quantity"]  
+            var change = res.body["itemInformation"]["change"]
+            assert.equal(inventory, "9")
+            assert.equal(change, "20")
+        }) .end(done);
+        });        
     });
 
+    describe("POST /api/customer/items/:itemID/purchases",function(){
+    it("should return status fail customer cant purchase item out of stock",
+    function(done){
+        request(apiApp)
+        .post("/api/customer/items/1/purchases")
+        .expect(200)
+        .expect("Content-Type", "application/json; charset=utf-8")
+        .expect(function(res){
+            var status = res.body["vendingData"]["status"]
+            assert.equal(status, "fail")
+        }) .end(done);
+        });        
+    });
+    
+    
+
+
 describe("GET /api/vendor/purchases",function(){
-    it("should return successfully", function(done){
+    it("should return purchase history successfully", function(done){
         request(apiApp)
         .get("/api/vendor/purchases")
         .expect(200)
@@ -54,7 +82,7 @@ describe("GET /api/vendor/purchases",function(){
     });
 
 describe("GET /api/vendor/money",function(){
-    it("should return successfully", function(done){
+    it("should return amount of money successfully", function(done){
         request(apiApp)
         .get("/api/vendor/money")
         .expect(200)
